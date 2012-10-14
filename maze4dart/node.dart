@@ -4,22 +4,25 @@ class NodeImpl extends PropertyContainerImpl implements Node {
   /*maybe replace with a tree map, better for access*/
   final _rels = new List<Relationship>(); 
   final GraphImpl _graph;
-  
+
   NodeImpl(this._id,this._graph);
   
-  Relationship createRelationship(Node n, [RelationshipType type,Map<String,Object> props]){
+  Relationship createRelationship(Node n, [RelationshipType type=DefaultRelationshipType.DEFAULT,Map<String,Object> props]){
     /* create the relationship */
     RelationshipImpl rel = new RelationshipImpl(this._graph._next(Standard._REL_COUNTER), 
-        type==null?DefaultRelationshipType.DEFAULT:type, this, n, this._graph);
+        type, this, n, this._graph);
     this._rels.add(rel);
     /* tell the other guy */
     n._addRelationship(rel);
     /* autoindex all properties or just the ones configured in the index */
     if (this._graph.isAutoIndex()) {
+      if (props != null && props.length > 0)
+        props.forEach((k,v)=>rel.setProperty(k, v));
       this._graph._relIdx.add(rel);
     }
     /* always index the id */
     this._graph._relIdx.add(rel,Standard._REL_ID_INDEX_FIELD,rel.getId());
+    return rel;
   }
   
   /**
@@ -34,7 +37,7 @@ class NodeImpl extends PropertyContainerImpl implements Node {
 
   void delete(){
     /* delete all relationships */
-    this._rels.forEach((rel) => rel.delete());
+    this._rels.forEach((rel) => rel.delete(this));
     this._rels.clear();
     if (this._graph.isAutoIndex()){
       this._graph._nodeIdx.remove(this);

@@ -3,8 +3,8 @@ class GraphImpl implements Graph {
   
   Index _nodeIdx;
   Index _relIdx;
-  AddOnlyIndex _readNodeIdx;
-  AddOnlyIndex _readRelIdx;
+  ReadOnlyIndex _readNodeIdx;
+  ReadOnlyIndex _readRelIdx;
   int _nodeCount = 0;
   int _relCount = 0;
   List<String> _idxFields;
@@ -13,17 +13,17 @@ class GraphImpl implements Graph {
    * Create the graph, create the Index suport for
    * node & relationship, configure the indexable fields
    */  
-  GraphImpl(bool autoindex, List<String> idxFields){
-    this._idxFields = idxFields;
-    this._autoIndex = autoindex;
+  GraphImpl([List<String> idxFields]){
+    this._idxFields = idxFields==null?[]:idxFields;
+    this._autoIndex = this._idxFields.length > 0;
     List<String> nIdxFields = [Standard._NODE_ID_INDEX_FIELD];
     nIdxFields.addAll(idxFields);
     this._nodeIdx = new IndexImpl(nIdxFields);
-    this._readNodeIdx = new AddOnlyIndexImpl(this._nodeIdx);
+    this._readNodeIdx = new ReadOnlyIndexImpl(this._nodeIdx);
     List<String> rIdxFields = [Standard._REL_ID_INDEX_FIELD];
     rIdxFields.addAll(idxFields);
     this._relIdx = new IndexImpl(rIdxFields);
-    this._readRelIdx = new AddOnlyIndexImpl(this._relIdx);
+    this._readRelIdx = new ReadOnlyIndexImpl(this._relIdx);
   }
   
   Node createNode([Map<String,Object> props]){
@@ -48,9 +48,9 @@ class GraphImpl implements Graph {
     return hits==null?null:(hits.length==1?hits[0]:null);    
   }
   
-  AddOnlyIndex getRelationshipIndex() => this._readRelIdx;
+  ReadOnlyIndex getRelationshipIndex() => this._readRelIdx;
   
-  AddOnlyIndex getNodeIndex() => this._readNodeIdx;
+  ReadOnlyIndex getNodeIndex() => this._readNodeIdx;
   
   int _next(String counter){
     switch(counter){
@@ -63,5 +63,5 @@ class GraphImpl implements Graph {
     }
   }
   
-  bool isAutoIndex() => this._autoIndex;
+  bool isAutoIndex() => this._autoIndex || this._idxFields.length==0;
 }

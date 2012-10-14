@@ -64,18 +64,19 @@ class IndexImpl<T extends PropertyContainer> implements Index {
   
   void add(T object, [String key, Object value]){
     if ((key==null) != (value==null))
-      throw new IllegalArgumentException([key,value]); /* key and values are a must */
+      throw new IllegalArgumentException([key,value]); /* key AND values are a must */
     _delegateHandler(object, (hits,object) => hits.add(object), this._updateAndHandle, key, value);
   }
   
-  T putIfAbsent(T object, String key, Object value){
+  List<T> putIfAbsent(T object, String key, Object value){
     if (key == null || value == null)
       throw new IllegalArgumentException([key,value]);
-    return _delegateHandler(object, (hits,object) {
-      int i = hits.indexOf(object); 
-      if (i >= 0) return hits[i];
-      hits.add(object); return null;
-    },this._updateAndHandle, key, value);
+    return _updateAndHandle(object, key, value, 
+        (hits,object) {
+          if (hits.length > 0) return new List.from(hits);
+          hits.add(object); 
+          return [];
+        });
   }
   
   /**
@@ -107,11 +108,9 @@ class IndexImpl<T extends PropertyContainer> implements Index {
   
   void remove(T object,[String key, Object value]){
     this._delegateHandler(object, (hits, object) {
-      for (int i = 0; i < hits.length; i++){
-        if (hits[i] == object){
-          hits.removeAt(i);
-        }
-      }
+      int i = hits.indexOf(object);
+      if (i >= 0)
+        hits.removeAt(i);
     },this._findAndHandle,key, value);
   }
   
@@ -129,9 +128,8 @@ class IndexImpl<T extends PropertyContainer> implements Index {
  * but only exposes get, and putIfAbsent it doesn't allow
  * the caller to change existing values
  */
-class AddOnlyIndexImpl<T extends PropertyContainer> implements AddOnlyIndex{
+class ReadOnlyIndexImpl<T extends PropertyContainer> implements ReadOnlyIndex{
   Index _inner;
-  AddOnlyIndexImpl(this._inner);
+  ReadOnlyIndexImpl(this._inner);
   List<T> get(String key, Object value) => this._inner.get(key, value);
-  T putIfAbsent(T object, String key, Object value) => this._inner.putIfAbsent(object, key, value);
 }

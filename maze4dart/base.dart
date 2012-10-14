@@ -55,7 +55,7 @@ interface Relationship extends PropertyContainer{
    * Removes the relationship from every node,
    * from the graph and from the internal index
    */
-  void delete();
+  void delete([Node callingNode]);
   /**
    * Returns the node towards which this relationship
    * is pointing (End Node)
@@ -161,24 +161,15 @@ class Standard {
  * you can add or put and object but
  * cannot change existing ones
  */
-interface AddOnlyIndex<T extends PropertyContainer>{
+interface ReadOnlyIndex<T extends PropertyContainer>{
   /**
    * Returns the objects associated with
    * the key/value pair
    */
   List<T> get(String key, Object value);
-  /**
-   * Add object to the key/value multimap
-   * only if there is nothing there, otherwise
-   * it just returns the existing value
-   * 
-   * @throws IllegalArgumentException
-   *  if key or value are null
-   */
-  T putIfAbsent(T object, String key, Object value);
   
 }
-interface Index<T extends PropertyContainer> extends AddOnlyIndex<T>{
+interface Index<T extends PropertyContainer> extends ReadOnlyIndex<T>{
   /**
    * Add object to the key/value multimap
    * doesn't care if there is something already 
@@ -190,6 +181,12 @@ interface Index<T extends PropertyContainer> extends AddOnlyIndex<T>{
    */
   void add(T object, [String key, Object value]);
 
+  /**
+   * Adds the Object to the Index
+   * at key/value location only if
+   * there is no previous entry
+   */
+  List<T> putIfAbsent(T object, String key, Object value);
   /**
    * removes the object associated with the key/value pair
    */
@@ -232,7 +229,7 @@ interface Graph {
    * If no index is required then
    * configure the graph to autoindex=false
    */
-  AddOnlyIndex getNodeIndex();
+  ReadOnlyIndex getNodeIndex();
   
   /**
    * Returns the default relationship index
@@ -240,7 +237,7 @@ interface Graph {
    * configure the graph to autoindex=false
    * 
    */
-  AddOnlyIndex getRelationshipIndex(); 
+  ReadOnlyIndex getRelationshipIndex(); 
 
   /**
    * Returns true if relationships and nodes
@@ -254,4 +251,18 @@ interface Graph {
    */
   int _next(String counter);
   
+}
+
+class IllegalStateError implements Error{
+  final message;
+
+  /** The [message] describes the erroneous argument. */
+  const IllegalStateError([this.message = ""]);
+
+  String toString() {
+    if (message != null) {
+      return "Illegal argument(s): $message";
+    }
+    return "Illegal argument(s)";
+  }  
 }
