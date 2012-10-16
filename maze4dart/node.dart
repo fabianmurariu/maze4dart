@@ -90,4 +90,6 @@ class NodeImpl extends PropertyContainerImpl implements Node {
     }
   }
 
+  toString() => "n[${this._id}]";
+  
 }

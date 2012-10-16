@@ -62,4 +62,6 @@ class RelationshipImpl extends PropertyContainerImpl implements Relationship {
   RelationshipType getType() => _check(this._type);
   
   bool isType(RelationshipType type) => _check(this._type);
+  
+  toString() => "e[${this._id}](${this._startNode}->${this._endNode})";
 }

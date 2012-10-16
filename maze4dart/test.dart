@@ -264,5 +264,47 @@ main (){
       /* calls into rel 1,2,3,5 should be invalid */
     });
   });
+  
+  group('Pipe',(){
+    test("no change",(){
+      var initial = [1,2,3,4,5,6,8,9];
+      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v]);
+      var result = [];
+      while (p.hasNext()){
+        result.add(p.next());
+      }
+      expect(result,initial);
+    });
+    test("squared",(){
+      var initial = [1,2,3,4,5,6,8,9];
+      var expected = [1,4,9,16,25,36,64,81];
+      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v*v]);
+      var result = [];
+      while (p.hasNext()){
+        result.add(p.next());
+      }
+      expect(result,expected);
+    });
+    test("no change and squared",(){
+      var initial = [1,2,3,4,5,6,8,9];
+      var expected = [1,1,2,4,3,9,4,16,5,25,6,36,8,64,9,81];
+      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v, v*v]);
+      var result = [];
+      while (p.hasNext()){
+        result.add(p.next());
+      }
+      expect(result,expected);
+    });
+    test("empty",(){
+      var initial = [1,2,3,4,5,6,8,9];
+      Pipe p = new Pipe(initial.iterator(), (v, hn) => []);
+      var result = [];
+      while (p.hasNext()){
+        result.add(p.next());
+      }
+      expect(result,[]);
+    });
+    
+  });
 
 }

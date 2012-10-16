@@ -6,3 +6,5 @@
 #source("propContainer.dart");
 #source("graph.dart");
 #source("index.dart");
+#source("traversal.dart");
+#source("pipe.dart");
