@@ -28,7 +28,7 @@ class GraphImpl implements Graph {
   
   Node createNode([Map<String,Object> props]){
     int count = this._next(Standard._NODE_COUNTER);
-    Node n = new NodeImpl(count, this);
+    Node n = new NodeImpl._internal(count, this);
     if (props != null){
       props.forEach((k,v) => n.setProperty(k, v));
     }

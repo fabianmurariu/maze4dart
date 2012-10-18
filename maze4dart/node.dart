@@ -5,11 +5,11 @@ class NodeImpl extends PropertyContainerImpl implements Node {
   final _rels = new List<Relationship>(); 
   final GraphImpl _graph;
 
-  NodeImpl(this._id,this._graph);
+  NodeImpl._internal(this._id,this._graph);
   
   Relationship createRelationship(Node n, [RelationshipType type=DefaultRelationshipType.DEFAULT,Map<String,Object> props]){
     /* create the relationship */
-    RelationshipImpl rel = new RelationshipImpl(this._graph._next(Standard._REL_COUNTER), 
+    RelationshipImpl rel = new RelationshipImpl._internal(this._graph._next(Standard._REL_COUNTER), 
         type, this, n, this._graph);
     this._rels.add(rel);
     /* tell the other guy */

@@ -6,7 +6,7 @@ class RelationshipImpl extends PropertyContainerImpl implements Relationship {
   final Node _endNode;
   final RelationshipType _type;
   
-  RelationshipImpl(this._id,this._type,this._startNode, this._endNode,this._graph){
+  RelationshipImpl._internal(this._id,this._type,this._startNode, this._endNode,this._graph){
     if (this._startNode == null || this._endNode == null || this._id == null || this._graph == null || this._type == null)
       throw new ArgumentError("Null arguments: id:$this._id, type:$this._type, start:$this._startNode, end:$this._endNode, graph:$this._graph");
     _validate();
