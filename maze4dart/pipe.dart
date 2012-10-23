@@ -24,7 +24,11 @@ class Pipe<IN,OUT> implements Iterator<OUT>,Iterable<OUT>{
   final Process _proc;
   bool _available = false;
   
-  Pipe(this._wrapped,this._proc);
+  Pipe.wrap(Iterable<IN> iterable):this._proc=((v,hn)=>[v]),this._wrapped=iterable.iterator();
+  
+  Pipe(Iterable<IN> iterable, Process proc):
+    this._proc=proc,
+    this._wrapped=iterable.iterator();
   
   OUT next(){
     if (this._available) {
@@ -52,7 +56,7 @@ class Pipe<IN,OUT> implements Iterator<OUT>,Iterable<OUT>{
    */
   OUT processNextElement() {
     /* loop until you get a iterator with elements */
-    while (this._nextResult == null || !this._nextResult.hasNext()) {
+    while (_nextResult == null || !this._nextResult.hasNext()) {
       this._nextResult = processNext();
       if (this._nextResult == null) throw new ArgumentError(" null Iterator returned ");
     }
@@ -63,7 +67,9 @@ class Pipe<IN,OUT> implements Iterator<OUT>,Iterable<OUT>{
    * than a null one
    */
   Iterator<OUT> processNext() { 
-    var out = this._proc(this._wrapped.next(),this._wrapped.hasNext());
+    var nxt = this._wrapped.next();
+    var hn = this._wrapped.hasNext();
+    var out = this._proc(nxt,hn);
     return out == null?const Empty():out.iterator();
   }
   

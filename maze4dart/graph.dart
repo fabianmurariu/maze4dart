@@ -64,4 +64,34 @@ class GraphImpl implements Graph {
   }
   
   bool isAutoIndex() => this._autoIndex || this._idxFields.length==0;
+  
+  /**
+   * Generate a tree of depth and order(number of children per parent)
+   * 2 < depth < 9
+   * 0 < order < 5
+   */
+  Node generateTree([int depth = 4, order = 2]){
+    if (depth < 2 || order < 0 || depth > 9 || order >5 )
+      throw new ArgumentError(" Sane trees pls depth:$depth order:$order ");
+    Node root = createNode();
+    print (root);
+    _tree([root], 1, depth, order);
+    return root;
+  }
+  
+  void _tree(List<Node> parents, num level, num maxLevel, int order){
+    if (level >= maxLevel)
+      return;
+    level+=1;
+    var children = [];
+    for (Node parent in parents){
+      for (int i = 0; i< order; i++) {
+        Node n = createNode();
+        parent.createRelationship(n);
+        children.add(n);
+      }
+    }
+    print(children);
+    _tree(children,level,maxLevel,order);
+  }
 }

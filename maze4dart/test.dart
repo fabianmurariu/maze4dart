@@ -6,6 +6,22 @@ class TestRelationshipType implements RelationshipType{
 }
 
 main (){
+  group('Traversal',(){
+    GraphImpl g = new GraphImpl([]);
+    Node root = g.generateTree();
+    
+    test("6_nodes_dfs",(){
+      Traversal t = new Traversal().depthFirst();
+      Iterable<Path> result = t.start(root);
+      for (Path p in result) {
+        print (p.length());
+        for (Relationship rel in p){
+          print(rel);
+        }
+        print(" \n");
+      }
+    });
+  });
   group('Index',() {
     test('add_get',(){
       /* specify the key/value where you want to index */
@@ -254,7 +270,6 @@ main (){
       expect(graph.getRelationshipIndex().get("four", 5),[rel5]);
       expect(graph.getRelationshipIndex().get("four", 6),[rel6]);
       expect(graph.getRelationshipIndex().get("four", 7),[rel7]);
-      print("stophere");
       n2.delete();
       /* all relationships going in and out of n2 should be gone */
       expect(graph.getRelationshipIndex().get("four", 1),[]);
@@ -268,7 +283,7 @@ main (){
   group('Pipe',(){
     test("no change",(){
       var initial = [1,2,3,4,5,6,8,9];
-      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v]);
+      Pipe p = new Pipe(initial, (v,hn) => [v]);
       var result = [];
       while (p.hasNext()){
         result.add(p.next());
@@ -278,7 +293,7 @@ main (){
     test("squared",(){
       var initial = [1,2,3,4,5,6,8,9];
       var expected = [1,4,9,16,25,36,64,81];
-      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v*v]);
+      Pipe p = new Pipe(initial, (v,hn) => [v*v]);
       var result = [];
       while (p.hasNext()){
         result.add(p.next());
@@ -288,7 +303,7 @@ main (){
     test("no change and squared",(){
       var initial = [1,2,3,4,5,6,8,9];
       var expected = [1,1,2,4,3,9,4,16,5,25,6,36,8,64,9,81];
-      Pipe p = new Pipe(initial.iterator(), (v,hn) => [v, v*v]);
+      Pipe p = new Pipe(initial, (v,hn) => [v, v*v]);
       var result = [];
       while (p.hasNext()){
         result.add(p.next());
@@ -297,7 +312,7 @@ main (){
     });
     test("empty",(){
       var initial = [1,2,3,4,5,6,8,9];
-      Pipe p = new Pipe(initial.iterator(), (v, hn) => []);
+      Pipe p = new Pipe(initial, (v, hn) => []);
       var result = [];
       while (p.hasNext()){
         result.add(p.next());
@@ -305,6 +320,19 @@ main (){
       expect(result,[]);
     });
     
+    test("incremental",(){
+      var initial = [];
+      Pipe p = new Pipe.wrap(initial);
+      for (int i = 0; i< 5; i++ ) {
+        p = new Pipe([p,[i]],(v, hn) => v);
+      }
+      var result = [];
+      while (p.hasNext()){
+        result.add(p.next());
+      }
+      expect(result,[0,1,2,3,4]);
+    });
+    
   });
-
+  
 }

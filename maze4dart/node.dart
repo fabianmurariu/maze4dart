@@ -92,4 +92,12 @@ class NodeImpl extends PropertyContainerImpl implements Node {
 
   toString() => "n[${this._id}]";
   
+  hashCode() => this._id;
+  
+  equals(Object n) {
+    if (n == null) return false;
+    if (!(n is NodeImpl)) return false;
+    return (this._id == n._id); 
+  }
+  
 }
