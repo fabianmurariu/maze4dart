@@ -32,7 +32,7 @@ main (){
         i++;
       }
     };
-    /* the tree:
+    /* the tree is a directed graph where the parrent points to the children:
      *               n0(root)
      *              /        \ 
      *            n1           n2
@@ -44,15 +44,25 @@ main (){
     test("dfs_traversal",(){
       Traversal t = new Traversal().depthFirst();
       Iterable<Path> traversal = t.traverse(root);
-      eval([[0],[0,2],[0,2,6],[0,2,6,14],[0,2,6,13],[0,2,5],[0,2,5,12],[0,2,5,11],
-      [0,1],[0,1,4],[0,1,4,10],[0,1,4,9],[0,1,3],[0,1,3,8],[0,1,3,7]],traversal,true);
+      eval([[0],
+            [0,2],
+            [0,2,6],
+            [0,2,6,14],[0,2,6,13],
+            [0,2,5],
+            [0,2,5,12],[0,2,5,11],
+            [0,1],
+            [0,1,4],
+            [0,1,4,10],[0,1,4,9],
+            [0,1,3],
+            [0,1,3,8],[0,1,3,7]],traversal,true);
     });
     test("bfs_traversal",(){
       Traversal t = new Traversal().breadthFirst();
       Iterable<Path> traversal = t.traverse(root);
-      eval([[0],[0,1],[0,2],[0,1,3],[0,1,4],[0,2,5],[0,2,6],
-            [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],
-            [0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
+      eval([[0],
+            [0,1],[0,2],
+            [0,1,3],[0,1,4],[0,2,5],[0,2,6],
+            [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],[0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
     });    
   });
   group('Index',() {

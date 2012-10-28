@@ -1,6 +1,6 @@
 interface PropertyContainer {
-  Object getProperty(String name);
-  void setProperty(String name, Object value);
+  Object getProperty(String key);
+  void setProperty(String key, Object value);
   Collection<String> getKeys();
   bool hasProperty(String key);
   Object removeProperty(String key);

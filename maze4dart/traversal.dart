@@ -189,12 +189,12 @@ class Traversal{
     Path firstPath = new Path._fromNode(start);
     this._order.add([firstPath]);
     this._unique = new Unique([start]);
-    return new Traverser2._inner(this);
+    return new Traverser._inner(this);
   }
 }
 
-class Traverser2 implements Iterable<Path>{
-  
+class Traverser implements Iterable<Path>{
+  /* description of the traversal */
   final Traversal _traversal;
   
   Iterable<Path> explorer(Path path, bool hasNext) {
@@ -229,7 +229,7 @@ class Traverser2 implements Iterable<Path>{
     }
     return nextPath;
   }
-  Traverser2._inner(this._traversal);
+  Traverser._inner(this._traversal);
  
   Iterator<Path> iterator() => new Pipe(_traversal._order,explorer);
   

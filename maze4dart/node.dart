@@ -45,10 +45,11 @@ class NodeImpl extends PropertyContainerImpl implements Node {
     this._graph._nodeIdx.remove(this,Standard._NODE_ID_INDEX_FIELD,this._id);
   }
   
-  Function makeFilter(Direction direction, RelationshipType type){
+  Function makeFilter(Direction direction, RelationshipType type,[Map<String,Object> props]){
     return (Relationship r) {
       bool checkType = (type == null || r.getType() == type);
       bool checkDirection = true;
+      bool checkProps = true;
       /* switch on enums? */
       if (direction == Direction.BOTH){
         checkDirection == true;
@@ -56,8 +57,11 @@ class NodeImpl extends PropertyContainerImpl implements Node {
         checkDirection = (r.getEndNode() == this);
       } else if (direction == Direction.OUTGOING){
         checkDirection = (r.getStartNode() == this);
+      } 
+      if (props != null && props.length > 0){
+        props.forEach((k,v) => checkProps = (r.getProperty(k) == v));
       }
-      return checkType && checkDirection;      
+      return checkType && checkDirection && checkProps;      
     };
   }
   
@@ -75,6 +79,7 @@ class NodeImpl extends PropertyContainerImpl implements Node {
     for (int i = 0; i < this._rels.length; i++){
       if (include(this._rels[i])) return true;
     }
+    return false;
   }
   
   void _removeRelationship(Relationship r, [int index]){
