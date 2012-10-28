@@ -41,6 +41,17 @@ main (){
      *       /\       /\     /\      /\
      *     n7  n8   n9 n10 n11 n12 n13 n14
      *             */
+    test("bfs_search",(){
+      Node end = g.getNodeById(12);
+      Traversal t = new Traversal().breadthFirst().addEvaluator((Path p) {
+        if (p.endNode() == end)
+          return Evaluation.INCLUDE_AND_CONTINUE; /* only include the path with the end node */
+        return Evaluation.EXCLUDE_AND_CONTINUE;
+      });
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0,2,5,12]],traversal,true);
+    });
+
     test("dfs_traversal",(){
       Traversal t = new Traversal().depthFirst();
       Iterable<Path> traversal = t.traverse(root);
@@ -63,7 +74,7 @@ main (){
             [0,1],[0,2],
             [0,1,3],[0,1,4],[0,2,5],[0,2,6],
             [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],[0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
-    });    
+    });   
   });
   group('Index',() {
     test('add_get',(){

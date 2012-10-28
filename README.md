@@ -89,3 +89,18 @@ Below is a simple excerpt from the test package which does a DFS then a BFS thro
             [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],[0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
     }); 
 ```
+
+This is a BFS search with a custom evaluator that only includes the path with the end-node id 12
+```java
+    test("bfs_search",(){
+      Node end = g.getNodeById(12);
+      Traversal t = new Traversal().breadthFirst().addEvaluator((Path p) {
+        if (p.endNode() == end)
+          return Evaluation.INCLUDE_AND_CONTINUE; /* only include the path with the end node */
+        return Evaluation.EXCLUDE_AND_CONTINUE;
+      });
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0,2,5,12]],traversal,true);
+    });
+```
+You can find all the tests above in test.dart
