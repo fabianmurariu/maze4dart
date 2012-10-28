@@ -321,6 +321,27 @@ main (){
       expect(graph.getRelationshipIndex().get("four", 5),[]);
       /* calls into rel 1,2,3,5 should be invalid */
     });
+    test('property_lookup',(){
+      Graph g = new GraphImpl(["knows"]);
+      /*4 nodes */
+      Node n1 = g.createNode();
+      Node n2 = g.createNode();
+      Node n3 = g.createNode();
+      Node n4 = g.createNode();
+      /*7 edges */
+      Relationship rel1 = n1.createRelationship(n2, props:{"knows":2});
+      Relationship rel2 = n2.createRelationship(n1, props:{"knows":1});
+      Relationship rel3 = n2.createRelationship(n4, props:{"knows":4});
+      Relationship rel4 = n4.createRelationship(n3, props:{"knows":3});
+      Relationship rel5 = n4.createRelationship(n2, props:{"knows":2});
+      Relationship rel6 = n3.createRelationship(n1, props:{"knows":1});
+      Relationship rel7 = n1.createRelationship(n4, props:{"knows":4});
+      /* autoindex */
+      expect(g.getRelationshipIndex().get("knows", 1),[rel2,rel6]);
+      expect(g.getRelationshipIndex().get("knows", 2),[rel1,rel5]);
+      expect(g.getRelationshipIndex().get("knows", 3),[rel4]);
+      expect(g.getRelationshipIndex().get("knows", 4),[rel3,rel7]);
+    });
   });
   
   group('Pipe',(){
