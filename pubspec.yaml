@@ -1,0 +1,5 @@
+name:  maze4dart
+description:  A sample application
+#dependencies: 
+  unittest: { sdk: unittest }
+
