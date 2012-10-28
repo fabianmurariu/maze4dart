@@ -15,11 +15,12 @@ Features:
 *	Versatile traversal API inspired by neo4j
 
 Create a simple graph, look for relationships via "knows" property:
-Node Rels
-1 	 2 4
-2	 1 4
-3	 1
-4	 2 3
+
+	Node Rels
+	1. 	 2 4
+	2.	 1 4
+	3.	 1
+	4.	 2 3
 Code:
 ```java
 	  Graph graph = new GraphImpl(["knows"]);
