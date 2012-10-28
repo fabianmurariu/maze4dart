@@ -21,6 +21,7 @@ Node Rels
 3	 1
 4	 2 3
 Code:
+```java
 	  Graph graph = new GraphImpl(["knows"]);
 	  /* 4 nodes */
       Node n1 = graph.createNode();
@@ -49,4 +50,4 @@ Code:
       g.getRelationshipIndex().get("knows", 2);//[rel1,rel5]);
       g.getRelationshipIndex().get("knows", 3);//[rel4]);
       g.getRelationshipIndex().get("knows", 4);//[rel3,rel7]);
-      
+```
