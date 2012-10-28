@@ -103,18 +103,23 @@ class StackOrderPolicy extends OrderPolicy<Path>{
  * and expander */
 class Traversal{
   
-  Expander _expander = (Path p) {
-    Node n = p.endNode();
-    return n.getRelationships(Direction.BOTH, DefaultRelationshipType.DEFAULT);
-  };
+  Expander _expander;
   
   /**
    * Default evaluator outputs every path
    * and follows every path 
    */
-  List<Evaluator> _evaluators = [(Path p) => (Evaluation.INCLUDE_AND_CONTINUE) ];
+  List<Evaluator> _evaluators;
   
   Unique _unique = new Unique();
+  
+  Traversal(){
+    _expander = (Path p) {
+      Node n = p.endNode();
+      return n.getRelationships(Direction.BOTH, DefaultRelationshipType.DEFAULT);
+    };
+    _evaluators = [(Path p) => (Evaluation.INCLUDE_AND_CONTINUE) ];
+  }
   
   Traversal addEvaluator(Evaluator e) {
     _evaluators.add(e); return this;

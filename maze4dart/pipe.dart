@@ -17,14 +17,17 @@ typedef Iterable<OUT> Process<IN,OUT>(IN o, bool hasNext);
  * itself will return an Iterator (one or more values)
  */
 class Pipe<IN,OUT> implements Iterator<OUT>,Iterable<OUT>{
-  final Iterator<IN> _wrapped;
+  Iterator<IN> _wrapped;
   OUT _nextEnd;
   OUT _currentEnd;
   Iterator<OUT> _nextResult;
-  final Process _proc;
+  Process _proc;
   bool _available = false;
   
-  Pipe.wrap(Iterable<IN> iterable):this._proc=((v,hn)=>[v]),this._wrapped=iterable.iterator();
+  Pipe.wrap(Iterable<IN> iterable){
+    _proc=((v,hn)=>[v]);
+    _wrapped=iterable.iterator();
+  }
   
   Pipe(Iterable<IN> iterable, Process proc):
     this._proc=proc,
