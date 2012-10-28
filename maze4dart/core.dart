@@ -8,3 +8,4 @@
 #source("index.dart");
 #source("traversal.dart");
 #source("pipe.dart");
+#source("path.dart");

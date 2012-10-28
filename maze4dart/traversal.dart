@@ -1,99 +1,3 @@
-/** 
- * a path is built on a collection of paths
- * every time we expand a node it will create 
- * new paths depending on how many relationships
- * are succesfuly expanded
- * */
-class Path implements Iterable<Relationship>{
-
-  /* a path must maintain length
-   * this represents the number of
-   * relationships in the path */
-  int _length = 0;
-  /* a path must maintain weight
-   * this represents the sum of
-   * the cost of each relationship
-   * and it is equal to length when the
-   * cost is 1 */
-  int _weight = 0;
-  
-  /* all paths should start from 
-   * a node */
-  Node _startNode;
-  
-  /* the old path on top of which we are 
-   * adding new relations */
-  Path _oldPath;
-  
-  /* the first relationship is in the oldPaths */
-  Relationship _firstRelationship;
-  
-  /* relationships additional to the previous Path */
-  List<Relationship> _rels = [];
-  
-  Path._fromNode(Node n){
-    this._startNode = n;
-  }
-  
-  Path(Path oldPath, List<Relationship> newRels,[String costProp]){
-    if (newRels == null || newRels.length <= 0)
-      throw new ArgumentError("new Rels list cannot be empty or null");
-    this._oldPath = oldPath;
-    this._rels.addAll(newRels);
-    this._firstRelationship = oldPath._firstRelationship == null?newRels[0]:oldPath._firstRelationship;
-    this._length += (oldPath._length+newRels.length);
-    if (costProp == null) {
-      this._weight += (oldPath._weight+newRels.length);
-    } else {
-      int newcost = 0;
-      /* this will fail if you mess up the property cost 
-       * TODO: math.abs on property to ignore negative values*/
-      newRels.forEach((rel) => (newcost+=rel.getProperty(costProp)));
-      this._weight +=newcost;
-    }
-  }
-  /** Utility to get the last relationship */
-  Relationship lastRelationship() => this._rels.isEmpty()?null:this._rels.last();
-  /** Utility to get the first relationship */
-  Relationship firstRelationship() => this._firstRelationship;
-
-  /* if first/last relationships are null then we pick _startNode
-   * otherwise we pick endNode of lastRelationship
-   * first/last rels should either be both null or both not null
-   * otherwise something is wrong with the internal state */
-  Node endNode()  {
-    if (this.lastRelationship()==null && this._firstRelationship==null){
-      return this._startNode;
-    } else {
-      return this.lastRelationship().getEndNode();
-    }
-  }
-  /* if first/last relationships are null then we pick _startNode
-   * otherwise we pick startNode of firstRelationship 
-   * first/last rels should either be both null or both not null
-   * otherwise something is wrong with the internal state */  
-  Node startNode() {
-    if (this.lastRelationship()==null && this._firstRelationship==null){
-      return this._startNode;
-    } else {
-      return this._firstRelationship.getStartNode();
-    }    
-  }
-  
-  int length() => this._length;
-  
-  int weight() => this._weight;
-  
-  Iterator<Relationship> relationships() => this.iterator();
-  
-  Iterator<Node> nodes() => new Pipe<Relationship,Node>([this._oldPath,this._rels].filter((v)=>v!=null),
-      (rel,hasNext) =>
-          hasNext?[rel.getStartNode()]:[rel.getStartNode(),rel.getEndNode()]);
-  
-  Iterator<Relationship> iterator() => new Pipe<Relationship,Relationship>([this._oldPath,this._rels].filter((v)=>v!=null),(v,hn)=>v);
-  
-}
-
 /**
  * Expand a path
  * return the relationships
@@ -105,6 +9,30 @@ typedef Iterable<Relationship> Expander(Path path);
  * or included in the final result
  */
 typedef Evaluation Evaluator(Path path);
+
+/**
+ * Evaluates if the currentPath and the next Relationship
+ * are unique in different contexts
+ * 
+ * Can be globaly unique, path unique
+ * can be a Node or a Relationship
+ */
+class Unique{
+  final Set<PropertyContainer> _nodes = new Set();
+  
+  Unique([List<PropertyContainer> initial]){
+    if (initial != null)
+      _nodes.addAll(initial);
+  }
+  
+  bool checkUnique(Path path, Relationship nextRel){
+    Node n = path.endNode();
+    Node checkMe = nextRel.getOtherNode(n);
+    if (this._nodes.contains(checkMe)) return false;
+    this._nodes.add(checkMe);
+    return true;
+  }
+}
 
 class Evaluation{
   static Evaluation EXCLUDE_AND_CONTINUE = new Evaluation._inner(false, true);
@@ -186,10 +114,20 @@ class Traversal{
    */
   List<Evaluator> _evaluators = [(Path p) => (Evaluation.INCLUDE_AND_CONTINUE) ];
   
+  Unique _unique = new Unique();
+  
   Traversal addEvaluator(Evaluator e) {
     _evaluators.add(e); return this;
   }
   
+  /**
+   * Adds a check for uniqueness
+   * the defaul is a global node checker
+   * that ensures that nodes are explored only once
+   */
+  Traversal addUniqueCheck(Unique unique){
+    _unique = unique; return this;
+  }
   /**
    * All evaluators need to agree
    * on the path include/continue 
@@ -212,7 +150,7 @@ class Traversal{
   /* the order in which the expanded nodes
    * are sorted, queue for BFS, stack for DFS
    * priority-queue for various shortest path */
-  OrderPolicy<Path> _order;
+  OrderPolicy<Path> _order = new StackOrderPolicy();
   
   
   Traversal customExpander(Expander expander) {
@@ -222,8 +160,8 @@ class Traversal{
   
   Traversal expander([RelationshipType type = DefaultRelationshipType.DEFAULT,
       Direction direction=Direction.OUTGOING]){
-    /*FIXME: add property based expander here */
-    _expander = (Path p) {
+      /*FIXME: add property based expander here */
+      _expander = (Path p) {
       Node n = p.endNode();
       return n.getRelationships(direction, type);
     };
@@ -247,45 +185,52 @@ class Traversal{
     return this;
   }
   
-  /**
-   * Start traversing and return a Iterator
-   * with all available paths, sorted by weight
-   * You can start from one node or from more than one
-   */
-  Iterable<Path> start(Node node){
-    var result = new List<Path>();
-    if (node == null)
-      throw new ArgumentError("start node cannot be null");
-    /* first set up the explored set, and add the first path */
-    Set<Node> explored = new Set(); /* all nodes that were explored*/
-    Path start = new Path._fromNode(node);
-    _order.add([start]);
-    while(_order.hasNext()){
-      /* expand the next path as selected by the order policy */
-      Path currentPath = _order.next();
-      Evaluation e = _executeEvaluators(currentPath);
-      /* we 'continue' the loop we do NOT continue onto this path */
-      if (!e.toContinue()) continue; 
-      /* include this path into results */
-      if (e.toInclude()) result.add(currentPath); 
-      Node currentNode = currentPath.endNode();
-      if (!explored.contains(currentNode)){
-        /* we have not evaluated the end node of the
-         * current Path */
-        explored.add(currentNode);
-        Iterable<Relationship> expanded = _expander(currentPath);
-        /* We create new paths similar to currentPath but each
-         * with the new expanded relationship added to it 
-         * then add them to the OrderPolicy, do not
-         * add them if the other node is already explored */
-        for(Relationship rel in expanded){
-          Node aNode = rel.getOtherNode(currentNode);
-          if (!explored.contains(aNode)){
-            _order.add([new Path(currentPath,[rel])]);
-          }
-        }
+  Iterable<Path> traverse(Node start){
+    Path firstPath = new Path._fromNode(start);
+    this._order.add([firstPath]);
+    this._unique = new Unique([start]);
+    return new Traverser2._inner(this);
+  }
+}
+
+class Traverser2 implements Iterable<Path>{
+  
+  final Traversal _traversal;
+  
+  Iterable<Path> explorer(Path path, bool hasNext) {
+    var nextPath = [];
+    var currentPath = path;
+    /* Evaluate the first path from the Pipe */
+    Evaluation e = _traversal._executeEvaluators(currentPath);
+    /* if we are allowed we include we add to return object */
+    if (e.toInclude())
+      nextPath.add(currentPath);
+    /* If we are not allowed to continue then we
+     * evaluate the paths according to the configured 
+     * evaluators until we find a path
+     * that we are allowed to continue on */
+    while (!e.toContinue() && _traversal._order.hasNext()){
+      currentPath = _traversal._order.next();
+      e = _traversal._executeEvaluators(currentPath);
+    }
+    if (!e.toContinue()) /* we could not find anything to continue on*/
+      return nextPath;
+    
+    /* expand the current path */
+    Iterable<Relationship> expanded = _traversal._expander(currentPath);
+    for (Relationship rel in expanded){
+      /* We create new paths similar to currentPath but each
+       * with the new expanded relationship added to it 
+       * then add them to the OrderPolicy, do not
+       * add them if the other node is already explored */
+      if (_traversal._unique.checkUnique(currentPath,rel)){
+        _traversal._order.add([new Path(currentPath,[rel])]);
       }
     }
-    return result;
+    return nextPath;
   }
+  Traverser2._inner(this._traversal);
+ 
+  Iterator<Path> iterator() => new Pipe(_traversal._order,explorer);
+  
 }

@@ -73,7 +73,7 @@ class Pipe<IN,OUT> implements Iterator<OUT>,Iterable<OUT>{
     return out == null?const Empty():out.iterator();
   }
   
-  Iterator<OUT> iterator() => this;
+  Iterator<OUT> iterator() => this; //this makes a pipe not very re-usable
 }
 
 /**

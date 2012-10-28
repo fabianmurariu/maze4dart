@@ -5,22 +5,55 @@ class TestRelationshipType implements RelationshipType{
   const TestRelationshipType();
 }
 
+
+
 main (){
   group('Traversal',(){
     GraphImpl g = new GraphImpl([]);
     Node root = g.generateTree();
-    
-    test("6_nodes_dfs",(){
-      Traversal t = new Traversal().depthFirst();
-      Iterable<Path> result = t.start(root);
-      for (Path p in result) {
-        print (p.length());
-        for (Relationship rel in p){
-          print(rel);
+    var eval = assertNodePaths(List<List<int>> expectedNodes, Iterable<Path> traversalResult,[bool verify=true]){
+      int i = 0;
+      for (Path path in traversalResult){
+        /*we are counting nodes but the path.length() is the number of relationships*/
+        if (verify)
+          expect(path.length(),expectedNodes[i].length-1);
+        else
+          print("idx:$i length : ${path.length()} expected length:${expectedNodes[i].length-1}");
+        Iterator<Node> nodes = path.nodes();
+        int j = 0;
+        while(nodes.hasNext()){
+          Node node = nodes.next();
+          if (verify)
+            expect(node.getId(),expectedNodes[i][j]);
+          else
+            print(" result ${node}, expected ($i,$j):${expectedNodes[i][j]}");
+          j++;
         }
-        print(" \n");
+        i++;
       }
+    };
+    /* the tree:
+     *               n0(root)
+     *              /        \ 
+     *            n1           n2
+     *          /    \        /    \
+     *        n3      n4     n5      n6
+     *       /\       /\     /\      /\
+     *     n7  n8   n9 n10 n11 n12 n13 n14
+     *             */
+    test("dfs_traversal",(){
+      Traversal t = new Traversal().depthFirst();
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0],[0,2],[0,2,6],[0,2,6,14],[0,2,6,13],[0,2,5],[0,2,5,12],[0,2,5,11],
+      [0,1],[0,1,4],[0,1,4,10],[0,1,4,9],[0,1,3],[0,1,3,8],[0,1,3,7]],traversal,true);
     });
+    test("bfs_traversal",(){
+      Traversal t = new Traversal().breadthFirst();
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0],[0,1],[0,2],[0,1,3],[0,1,4],[0,2,5],[0,2,6],
+            [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],
+            [0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
+    });    
   });
   group('Index',() {
     test('add_get',(){
