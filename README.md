@@ -52,3 +52,40 @@ Code:
       g.getRelationshipIndex().get("knows", 3);//[rel4]);
       g.getRelationshipIndex().get("knows", 4);//[rel3,rel7]);
 ```
+
+Below is a simple excerpt from the test package which does a DFS then a BFS throught a binary tree
+
+```java
+    /* the tree is a directed graph where the parrent points to the children:
+     *               n0(root)
+     *              /        \ 
+     *            n1           n2
+     *          /    \        /    \
+     *        n3      n4     n5      n6
+     *       /\       /\     /\      /\
+     *     n7  n8   n9 n10 n11 n12 n13 n14
+     *             */
+    test("dfs_traversal",(){
+      Traversal t = new Traversal().depthFirst();
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0],
+            [0,2],
+            [0,2,6],
+            [0,2,6,14],[0,2,6,13],
+            [0,2,5],
+            [0,2,5,12],[0,2,5,11],
+            [0,1],
+            [0,1,4],
+            [0,1,4,10],[0,1,4,9],
+            [0,1,3],
+            [0,1,3,8],[0,1,3,7]],traversal,true);
+    });
+    test("bfs_traversal",(){
+      Traversal t = new Traversal().breadthFirst();
+      Iterable<Path> traversal = t.traverse(root);
+      eval([[0],
+            [0,1],[0,2],
+            [0,1,3],[0,1,4],[0,2,5],[0,2,6],
+            [0,1,3,7],[0,1,3,8],[0,1,4,9],[0,1,4,10],[0,2,5,11],[0,2,5,12],[0,2,6,13],[0,2,6,14]],traversal,true);
+    }); 
+```
